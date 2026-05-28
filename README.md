@@ -1,42 +1,63 @@
-# Azure-Sentinel-SOC-Lab
-In this project I am demonstrating my skills as SOV analyst Level 1
-The lab environment transitions from standard log management to programmatic security analytics:
-*   **Centralized SIEM:** Microsoft Sentinel handling structured cloud telemetry ingestion.
-*   **High-Fidelity Endpoint Auditing:** Customized **Sysmon** deployment mapped directly to kernel event handles for deep visibility into memory architecture, process creation, and network telemetry.
-*   **Infrastructure Management:** Managed completely as configuration-as-code using exported JSON infrastructure manifests.
+# Cloud-Native SIEM & EDR Implementation Lab
+An end-to-end security engineering project demonstrating the implementation of a corporate logging infrastructure, defensive telemetry pipelines, attack simulation, and automated incident response within Microsoft Azure.
 
 ---
 
-## 📂 Repository Blueprint & Components
-*   **`🏗️ architecture/`**: Contains network topology specifications, engineering design diagrams, and raw screenshot evidence.
-*   **`⚙️ configurations/`**: Houses the custom XML rulesets for system security configuration along with the master `.json` deployment configurations.
-*   **`☣️ attacks/`**: Documented attack frameworks, simulation stagers, and PowerShell execution transcripts targeting system resources.
-*   **`🔍 detections/`**: Custom Microsoft Sentinel analytics definitions (`.json` templates) and raw threat-hunting engines written in advanced KQL (`.kql`).
-*   **`⚡ automation-soar/`**: Deployment files for cloud-native Security Orchestration, Automation, and Response playbooks.
+## 🛠️ Project Objective & Real-World Scope
+This project showcases the skills required of a modern Cloud Security Engineer or SOC Analyst. Moving past purely theoretical security concepts, I built an enterprise-scale security architecture inside Azure, simulated real adversary techniques, and engineered detection mechanics to automate alert validation.
+
+### Core Architecture Components:
+* **Centralized SIEM Platform:** Microsoft Sentinel integrated with a dedicated Log Analytics Workspace to handle structured security event ingestion.
+* **High-Fidelity Endpoint Auditing (EDR):** Customized **Sysmon (System Monitor)** deployment mapped with SwiftOnSecurity baseline configurations to capture deep kernel-level telemetry.
+* **Adversary Simulation Node:** A dedicated Kali Linux deployment acting as an external threat actor targeting internal corporate assets.
 
 ---
 
-## 🎯 Threat Profiles & MITRE ATT&CK Mapping
-The analytical core of this portfolio focuses on hunting, catching, and containing highly dangerous **Credential Access (TA0006)** and **Defense Evasion (TA0005)** techniques:
-*   **T1003.001 - LSASS Memory Dumping:** Tracking unauthorized handle requests, `procdump`, and Mimikatz bypasses against the Windows security subsystem.
-*   **T1555 - Credentials from Password Stores:** Monitoring access to DPAPI vaults and local browser credentials data paths.
-*   **T1059.001 - PowerShell Execution:** Profiling obfuscated script blocks, execution policy bypass variations, and anomalous memory-loaded stagers.
+## 🗺️ Lab Infrastructure & Network Topology
+
+To stay strictly within the resource limitations and core quotas of a standard Azure Free Trial subscription, the lab's infrastructure was intelligently optimized into a hard-capped **4-vCPU footprint** without sacrificing defensive data visibility.
+
+| Asset Name | Operating System | Subnet Placement | Internal IP | Role in Lab Matrix | vCPU Cost |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **`vm-corp-srv`** | Windows Server 2022 | `snet-corp-endpoints` | `10.0.1.X` | Target Domain Controller / Host Telemetry Engine | 2 Cores (`Standard_B2s`) |
+| **`vm-kali-attack`** | Kali Linux | `snet-attacker-zone` | `10.0.2.X` | External Adversary Emulation Platform | 2 Cores (`Standard_B2s`) |
+
+### Perimeter Hardening (NSG Architecture)
+To implement a zero-trust model before generating attacks, the Network Security Groups (NSGs) guarding both assets were restricted. Administrative entryways—specifically **RDP (Port 3389)** on the Windows target and **SSH (Port 22)** on the Kali node—were locked down exclusively to the analyst’s personal public WAN IP address, protecting the lab environment from internet-wide scanning arrays.
 
 ---
 
-## 📊 Live Metrics & Security Operations Engineering
+## 🛰️ Telemetry Pipelines & Real-World Bug Fixing
 
-### Visual 1: Unified Cloud Security Engineering Center
-Custom event logs and telemetry structures flowing from the multi-platform node topology into a single centralized Log Analytics console.
-![Unified Workspace](architecture/screenshots/dashboard-pie.png)
+Telemetry collection was established using the modern **Azure Monitor Agent (AMA)** linked via cloud-native **Data Collection Rules (DCRs)**.
 
-### Visual 2: Incident Correlation & Attack Vector Analysis
-A view inside an active threat investigation tree, showing how Sentinel links the adversary's originating vector to compromised endpoint properties during execution.
-![Incident Correlation Map](architecture/screenshots/incident-graph.png)
+### The Ingestion Pipeline Breakdown:
+1. **Windows Security Events:** Configured a DCR to ingest all raw audit policy configurations directly into the `SecurityEvent` schema table.
+2. **Sysmon Telemetry:** Deployed the Sysmon agent locally on the target server using custom XML parsers to direct logs to `Microsoft-Windows-Sysmon/Operational`.
+
+              +-----------------------+
+              |  vm-corp-srv (Target) |
+              |   [Security Logs]     |
+              |   [Sysmon Kernel]     |
+              +-----------+-----------+
+                          | (Azure Monitor Agent)
+                          v
+            +-------------+-------------+
+            | Data Collection Rules (DCR)|
+            +-------------+-------------+
+                          |
+                          v
+         +----------------+----------------+
+         | Microsoft Sentinel Workspace    |
+         |   - SecurityEvent Table         |
+         |   - Event (Sysmon) Table        |
+         +---------------------------------+
+
+## Technical Problem-Solving: Overcoming XML Schema Mismatches
+During Phase 4 (Hunting Process Creation via Sysmon Event ID 1), an initial KQL analytics string looking for named XML tags (`CommandLine">`) failed to yield results. 
+
+Upon analyzing the raw payload schema, I discovered the local Azure Monitor Agent was packing individual command arguments into generic, unmapped `<Param>` XML data blocks. To bypass this schema limitation and build a resilient detection mechanism, I refactored the analytic logic to parse data dynamically using an unparsed `has_any` string validation model across the entire `EventData` array block.
 
 ---
 
-## 🏆 Engineering Deliverables & Metrics
-*   **Infrastructure Automation:** Whole-lab infrastructure exported into fully modifiable deployment profiles.
-*   **Noise Optimization:** Built custom baseline rulesets minimizing high-volume corporate infrastructure false-positives while maintaining zero-day detection capabilities.
-*   **Automated Containment:** Programmatic logic blocks configured to completely sever network transport paths for compromised targets when malicious behavior is verified.
+    
