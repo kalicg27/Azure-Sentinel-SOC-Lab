@@ -12,6 +12,7 @@ This project showcases the skills required of a modern Cloud Security Engineer o
 * **Adversary Simulation Node:** A dedicated Kali Linux deployment acting as an external threat actor targeting internal corporate assets.
 
 ---
+![Sentinel Incident Dashboard](automation-soar/Incidents_dashboardview.png)
 
 ## 🗺️ Lab Infrastructure & Network Topology
 
