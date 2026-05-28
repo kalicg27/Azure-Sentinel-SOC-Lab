@@ -31,6 +31,9 @@ To stay strictly within the resource limitations and core quotas of a standard A
 
 To implement a zero-trust model before generating attacks, the Network Security Groups (NSGs) guarding both assets were restricted. Administrative entryways—specifically **RDP (Port 3389)** on the Windows target and **SSH (Port 22)** on the Kali node—were locked down exclusively to the analyst’s personal public WAN IP address, protecting the lab environment from internet-wide scanning arrays.
 
+![ArchitectureVNET](architecture/screenshots/vnet-subnets.png)
+![ArchitectureVM](architecture/screenshots/VM-list.png)
+
 ---
 
 ## 🛰️ Telemetry Pipelines & Real-World Bug Fixing
