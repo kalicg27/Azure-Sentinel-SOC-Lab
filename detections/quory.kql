@@ -1,0 +1,4 @@
+SecurityEvent
+| where EventID == 4625
+| summarize FailureCount = count() by LogonProcessName, IpAddress, TargetUserName
+| order by FailureCount desc 
